@@ -1,0 +1,29 @@
+Task 1: Automate the creation of the following resources
+● A VPC
+○ A private subnet
+○ A public subnet
+● An IAM role with S3 access
+● An EC2 instance with the previously created role attached, inside the private
+subnet of the created VPC
+● An EC2 instance with no role attached, inside the public subnet of the
+created VPC
+○ Bootstrap this instance with NGINX
+● A load balancer in the public subnet of the created VPC
+○ Targeting the private EC2 instance
+● A security group
+○ Attached to the created EC2 instances
+
+Task 2: Build a CI/CD pipeline to run your automation
+Using a CI/CD tool provider of your choice, create a pipeline which will run the
+automation configured in Task 1.
+Requirements of this pipeline are as follows:
+1. It should run only if commits have been pushed to the master branch
+2. Multiple runs should not result in duplicated resources
+3. Any automation commands that fail should cause the build to fail
+
+Bonus Task:
+In order to showcase your approach to solving a less defined problem take a look at
+the following exercise.
+We want to scalably run a docker container which contains Nginx, design the
+infrastructure which will fulfill this and provide the IaC in the same repository as the
+tasks above.
