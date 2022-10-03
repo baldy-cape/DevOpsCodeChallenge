@@ -40,8 +40,8 @@ resource "aws_internet_gateway" "this" {
 }
 
 # Default Gateway
-resource "aws_route_table" "this" {
-  vpc_id = aws_vpc.DevOpsCodeChallenge.id
+resource "aws_default_route_table" "this" {
+  default_route_table_id = aws_vpc.DevOpsCodeChallenge.default_route_table_id
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.this.id
@@ -60,7 +60,6 @@ resource "aws_subnet" "private" {
   }
 }
 
-
 ## A public subnet
 resource "aws_subnet" "public" {
   cidr_block              = local.public_subnet
@@ -70,7 +69,6 @@ resource "aws_subnet" "public" {
     project = local.project_name
   }
 }
-
 ## An IAM role with S3 access
 resource "aws_iam_role" "S3Access" {
   name = "S3Access"
@@ -108,9 +106,6 @@ resource "aws_iam_role_policy" "S3Access" {
 ## An EC2 instance with the previously created role attached, inside the private subnet of the created VPC
 resource "aws_iam_instance_profile" "this" {
   role = aws_iam_role.S3Access.name
-  tags = {
-    project = local.project_name
-  }
 }
 
 resource "aws_instance" "private" {
@@ -122,6 +117,7 @@ resource "aws_instance" "private" {
   iam_instance_profile   = aws_iam_instance_profile.this.name
   tags = {
     project = local.project_name
+    Name = "private"
   }
 }
 
@@ -136,6 +132,7 @@ resource "aws_instance" "public" {
   subnet_id              = aws_subnet.public.id
   tags = {
     project = local.project_name
+    Name = "public"
   }
 }
 
