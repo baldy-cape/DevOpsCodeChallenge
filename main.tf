@@ -7,181 +7,200 @@ terraform {
   }
 }
 
-# Europe (Stockholm) eu-north-1
+locals {
+  region         = "eu-north-1"
+  project_name   = "DevOpsCodeChallenge"
+  vpc_subnet     = "10.0.0.0/16"
+  private_subnet = "10.0.1.0/24"
+  public_subnet  = "10.0.2.0/24"
+  ami            = "ami-0bcf2639b551f6b31"
+  instance_type  = "t3.nano"
+  key            = "delta"
+}
+
 provider "aws" {
   profile = "default"
-  region  = "eu-north-1"
+  region  = local.region
 }
 
 ## A VPC
-resource "aws_vpc" "DevOpsCodeChallengeVPC" {
+resource "aws_vpc" "DevOpsCodeChallenge" {
   cidr_block = "10.0.0.0/16"
   tags = {
-    Project = "DevOpsCodeChallenge"
+    project = local.project_name
   }
-
 }
 
 # Internet Gateway for the VPC 
-resource "aws_internet_gateway" "igw" {
-    vpc_id = "${aws_vpc.DevOpsCodeChallengeVPC.id}"
+resource "aws_internet_gateway" "this" {
+  vpc_id = aws_vpc.DevOpsCodeChallenge.id
+  tags = {
+    project = local.project_name
+  }
 }
 
 # Default Gateway
-resource "aws_route_table" "rt" {
-    vpc_id = "${aws_vpc.DevOpsCodeChallengeVPC.id}"
- 
- route {
-   cidr_block = "0.0.0.0/0"
-   gateway_id = aws_internet_gateway.igw.id
- }
+resource "aws_route_table" "this" {
+  vpc_id = aws_vpc.DevOpsCodeChallenge.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.this.id
+  }
+  tags = {
+    project = local.project_name
+  }
 }
 
 ## A private subnet
 resource "aws_subnet" "private" {
-  cidr_block = "10.0.1.0/24"
-  vpc_id     = aws_vpc.DevOpsCodeChallengeVPC.id
+  cidr_block = local.private_subnet
+  vpc_id     = aws_vpc.DevOpsCodeChallenge.id
   tags = {
-    Project = "DevOpsCodeChallenge"
+    project = local.project_name
   }
 }
 
 
 ## A public subnet
 resource "aws_subnet" "public" {
-  cidr_block              = "10.0.2.0/24"
-  vpc_id                  = aws_vpc.DevOpsCodeChallengeVPC.id
+  cidr_block              = local.public_subnet
+  vpc_id                  = aws_vpc.DevOpsCodeChallenge.id
   map_public_ip_on_launch = "true"
   tags = {
-    Project = "DevOpsCodeChallenge"
+    project = local.project_name
   }
 }
 
 ## An IAM role with S3 access
-resource "aws_iam_role" "S3AccessRole" {
-  name = "S3AccessRole"
-
+resource "aws_iam_role" "S3Access" {
+  name = "S3Access"
   assume_role_policy = jsonencode({
-    "Version": "2012-10-17",
-    "Statement": [
+    "Version" : "2012-10-17",
+    "Statement" : [
       {
-        "Action": "sts:AssumeRole",
-        "Principal": {
-          "Service": "ec2.amazonaws.com"
+        "Action" : "sts:AssumeRole",
+        "Principal" : {
+          "Service" : "ec2.amazonaws.com"
         },
-        "Effect": "Allow",
-        "Sid": ""
+        "Effect" : "Allow",
+        "Sid" : ""
+      }
+    ]
+  })
+  tags = {
+    project = local.project_name
+  }
+}
+
+resource "aws_iam_role_policy" "S3Access" {
+  role = aws_iam_role.S3Access.name
+  policy = jsonencode({
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : ["s3:*"],
+        "Resource" : ["*"]
       }
     ]
   })
 }
 
-resource "aws_iam_role_policy" "S3AccessPolicy" {
-  role = aws_iam_role.S3AccessRole.name
-
-  policy = jsonencode({
-    "Statement": [
-      {
-        "Effect": "Allow",
-        "Action": ["s3:*"],
-        "Resource": ["*"]
-      }
-        ]
-  })
-}
-
 ## An EC2 instance with the previously created role attached, inside the private subnet of the created VPC
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "ec2_profile"
-  role = aws_iam_role.S3AccessRole.name
+resource "aws_iam_instance_profile" "this" {
+  role = aws_iam_role.S3Access.name
+  tags = {
+    project = local.project_name
+  }
 }
 
-
-# Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type ami-0bcf2639b551f6b31
-resource "aws_instance" "ec2Private" {
-  ami           = "ami-0bcf2639b551f6b31"
-  instance_type = "t3.nano"
-  key_name = "delta"
-  vpc_security_group_ids = ["${aws_security_group.sg.id}"]
-  subnet_id = aws_subnet.private.id
-  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
+resource "aws_instance" "private" {
+  ami                    = local.ami
+  instance_type          = local.instance_type
+  key_name               = local.key
+  vpc_security_group_ids = ["${aws_security_group.this.id}"]
+  subnet_id              = aws_subnet.private.id
+  iam_instance_profile   = aws_iam_instance_profile.this.name
   tags = {
-    Name = "ec2Private"
+    project = local.project_name
   }
 }
 
 ## An EC2 instance with no role attached, inside the public subnet of the created VPC
 ## Bootstrap this instance with NGINX
-resource "aws_instance" "ec2Public" {
-  ami           = "ami-0bcf2639b551f6b31"                                                          
-  instance_type = "t3.nano"
-  key_name = "delta"
-  vpc_security_group_ids = ["${aws_security_group.sg.id}"]
-  user_data = "${file("bootstrap-nginx.sh")}"
-  subnet_id = aws_subnet.public.id
+resource "aws_instance" "public" {
+  ami                    = local.ami
+  instance_type          = local.instance_type
+  key_name               = local.key
+  vpc_security_group_ids = ["${aws_security_group.this.id}"]
+  user_data              = file("bootstrap-nginx.sh")
+  subnet_id              = aws_subnet.public.id
   tags = {
-    Name = "ec2Public"
+    project = local.project_name
   }
 }
 
 ## A load balancer in the public subnet of the created VPC Targeting the private EC2 instance
-resource "aws_lb" "test" {
-  name               = "test-lb-tf"
-  internal           = false
-  load_balancer_type = "network"
-  subnets            = [for subnet in aws_subnet.public : aws_subnet.public.id ]
-  enable_deletion_protection = true
-
+resource "aws_lb" "this" {
+  internal                   = false
+  load_balancer_type         = "network"
+  subnets                    = [for subnet in aws_subnet.private : aws_subnet.private.id]
+  enable_deletion_protection = false
   tags = {
-    Environment = "production"
+    project = local.project_name
   }
 }
 
-resource "aws_lb_target_group" "test" {
-  name     = "tf-example-lb-tg"
+resource "aws_lb_target_group" "this" {
   port     = 22
   protocol = "TCP"
-  vpc_id   = aws_vpc.DevOpsCodeChallengeVPC.id
-}
-
-resource "aws_lb_listener" "front_end" {
-  load_balancer_arn = aws_lb.test.arn
-  port              = "22"
-  protocol          = "TCP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.test.arn
+  vpc_id   = aws_vpc.DevOpsCodeChallenge.id
+  tags = {
+    project = local.project_name
   }
 }
 
-resource "aws_lb_target_group_attachment" "test" {
-  target_group_arn = aws_lb_target_group.test.arn
-  target_id        = aws_instance.ec2Private.id
+resource "aws_lb_listener" "this" {
+  load_balancer_arn = aws_lb.this.arn
+  port              = "22"
+  protocol          = "TCP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.this.arn
+  }
+  tags = {
+    project = local.project_name
+  }
+}
+
+resource "aws_lb_target_group_attachment" "this" {
+  target_group_arn = aws_lb_target_group.this.arn
+  target_id        = aws_instance.private.id
   port             = 22
 }
 
 ## A security group Attached to the created EC2 instances
-resource "aws_security_group" "sg" {
-    vpc_id = "${aws_vpc.DevOpsCodeChallengeVPC.id}"
-    
-    egress {
-        from_port = 0
-        to_port = 0
-        protocol = -1
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    ingress {
-        from_port = 22
-        to_port = 22
-        protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    ingress {
-        from_port = 80
-        to_port = 80
-        protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+resource "aws_security_group" "this" {
+  vpc_id = aws_vpc.DevOpsCodeChallenge.id
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    project = local.project_name
+  }
 }
 
