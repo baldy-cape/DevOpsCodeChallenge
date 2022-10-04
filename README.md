@@ -428,9 +428,86 @@ Error: Terraform exited with code 3.
 Error: Process completed with exit code 1.
 ```
 
+## Oneliner test for public nginx
+```
+[~/storage/git/DevOpsCodeChallenge] $ curl  http://$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --output text --filters Name=tag:Name,Values=public)
+<h1>DevOps Code Challenge</H1>Tue Oct  4 09:19:19 UTC 2022
+```
+
+
 # Bonus Task:
+```
 In order to showcase your approach to solving a less defined problem take a look at
 the following exercise.
 We want to scalably run a docker container which contains Nginx, design the
 infrastructure which will fulfill this and provide the IaC in the same repository as the
 tasks above.
+```
+
+My approach would be to utilise a Kubernetes as a service product such as GKE autopilot. 
+
+This reduces the amount of infrastructure that needs to be maintained. 
+
+## Create Cluster 
+```
+gcloud container clusters create-auto DevOpsCodeChallenge-cluster
+```
+
+## Deploy nginx 
+```
+[~/storage/git/DevOpsCodeChallenge/bonus] $ kubectl apply -f nginx.yaml 
+...
+[~/storage/git/DevOpsCodeChallenge/bonus] $ kubectl get pods | grep nginx
+W1004 11:30:51.279915 3352685 gcp.go:119] WARNING: the gcp auth plugin is deprecated in v1.22+, unavailable in v1.26+; use gcloud instead.
+To learn more, consult https://cloud.google.com/blog/products/containers-kubernetes/kubectl-auth-changes-in-gke
+nginx-deployment-74d589986c-7dcz2   1/1     Running             0          83s
+nginx-deployment-74d589986c-8f7rz   0/1     ContainerCreating   0          83s
+```
+## Test Access
+```
+[~/storage/git/DevOpsCodeChallenge/bonus] $ kubectl get service | grep nginx
+W1004 11:42:08.763057 3353686 gcp.go:119] WARNING: the gcp auth plugin is deprecated in v1.22+, unavailable in v1.26+; use gcloud instead.
+To learn more, consult https://cloud.google.com/blog/products/containers-kubernetes/kubectl-auth-changes-in-gke
+nginx        LoadBalancer   10.48.2.170   34.88.40.31   80:31742/TCP   5m48s
+(laurence@carbon) Tue Oct 04 11:42:09
+[~/storage/git/DevOpsCodeChallenge/bonus] $ curl 34.88.40.31
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+## Scale 
+Double the number of containers running nginx
+```
+[~/storage/git/DevOpsCodeChallenge/bonus] $ kubectl scale --replicas=4 deployment nginx-deployment 
+W1004 11:45:10.137775 3354006 gcp.go:119] WARNING: the gcp auth plugin is deprecated in v1.22+, unavailable in v1.26+; use gcloud instead.
+To learn more, consult https://cloud.google.com/blog/products/containers-kubernetes/kubectl-auth-changes-in-gke
+deployment.apps/nginx-deployment scaled
+(laurence@carbon) Tue Oct 04 11:45:10
+[~/storage/git/DevOpsCodeChallenge/bonus] $ kubectl get pods | grep nginx
+W1004 11:45:20.535406 3354030 gcp.go:119] WARNING: the gcp auth plugin is deprecated in v1.22+, unavailable in v1.26+; use gcloud instead.
+To learn more, consult https://cloud.google.com/blog/products/containers-kubernetes/kubectl-auth-changes-in-gke
+nginx-deployment-74d589986c-7dcz2   1/1     Running             0          15m
+nginx-deployment-74d589986c-8f7rz   1/1     Running             0          15m
+nginx-deployment-74d589986c-m9g6t   0/1     ContainerCreating   0          10s
+nginx-deployment-74d589986c-szmvb   1/1     Running             0          10s
+```
