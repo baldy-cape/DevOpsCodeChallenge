@@ -333,11 +333,42 @@ Using a CI/CD tool provider of your choice, create a pipeline which will run the
 automation configured in Task 1.
 
 ```
+## Setup
+### Terraform Cloud
+Following https://learn.hashicorp.com/tutorials/terraform/github-actions?in=terraform/automation
+
+- Create workspace 
+- Add AWS Credintials
+- Create API Token
+
+### Github 
+- Add TF_API_TOKEN to Repo secrets
+- Create .github/workflows/terraform.yml 
+- Edit main.tf adding cloud section 
 
 ## Requirements of this pipeline are as follows:
 1. It should run only if commits have been pushed to the master branch
+From .github/workflows/terraform.yml
+```
+name: "Terraform"
+
+on:
+  push:
+    branches:
+      - main
+```
+
 2. Multiple runs should not result in duplicated resources
+
+Using Terraform cloud the state is stored avoiding duplicate resoures when run from multiple locations. 
+
 3. Any automation commands that fail should cause the build to fail
+#### Edit main.tf
+Make change to main.tf so that terraform fmt -check fails
+#### Push change to master
+
+#### Confirm run fails
+
 
 # Bonus Task:
 In order to showcase your approach to solving a less defined problem take a look at
