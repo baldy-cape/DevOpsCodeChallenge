@@ -29,7 +29,7 @@ provider "aws" {
   # After getting error 200~Error: error configuring Terraform AWS Provider: failed to get shared config profile, default.
   # https://discuss.hashicorp.com/t/error-error-configuring-terraform-aws-provider-failed-to-get-shared-config-profile-default/39417/3
   # profile = "default" 
-     region = local.region
+  region = local.region
 }
 
 ## A VPC

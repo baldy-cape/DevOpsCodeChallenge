@@ -365,10 +365,68 @@ Using Terraform cloud the state is stored avoiding duplicate resoures when run f
 3. Any automation commands that fail should cause the build to fail
 #### Edit main.tf
 Make change to main.tf so that terraform fmt -check fails
+```
+(laurence@carbon) Tue Oct 04 11:01:46
+[~/storage/git/DevOpsCodeChallenge] $ git checkout main
+Switched to branch 'main'
+Your branch is up to date with 'origin/main'.
+(laurence@carbon) Tue Oct 04 11:02:40
+[~/storage/git/DevOpsCodeChallenge] $ git checkout master
+Switched to branch 'master'
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+(laurence@carbon) Tue Oct 04 11:02:46
+[~/storage/git/DevOpsCodeChallenge] $ vim main.tf 
+(laurence@carbon) Tue Oct 04 11:02:55
+[~/storage/git/DevOpsCodeChallenge] $ terraform fmt -check; echo $?
+main.tf
+3
+```
+
 #### Push change to master
+```
+(laurence@carbon) Tue Oct 04 11:03:07
+[~/storage/git/DevOpsCodeChallenge] $ git commit -a -m"Broke main.tf formatting"
+[master d05cd05] Broke main.tf formatting
+ Committer: Laurence Baldwin <laurence@carbon.lancia.za.org>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the 
+following command and follow the instructions in your editor to edit
+your configuration file:
 
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+(laurence@carbon) Tue Oct 04 11:03:36
+[~/storage/git/DevOpsCodeChallenge] $ git push
+Enumerating objects: 11, done.
+Counting objects: 100% (11/11), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (7/7), 1.04 KiB | 532.00 KiB/s, done.
+Total 7 (delta 5), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (5/5), completed with 4 local objects.
+To github.com:baldy-cape/DevOpsCodeChallenge.git
+   06b03e3..d05cd05  master -> master
+```
 #### Confirm run fails
+From github actions 
+https://github.com/baldy-cape/DevOpsCodeChallenge/actions/runs/3181209918/jobs/5185692914
+```
+Run terraform fmt -check
+/home/runner/work/_temp/b66f13f2-0926-4f56-b077-f3d3bd209585/terraform-bin fmt -check
+main.tf
 
+
+
+Error: Terraform exited with code 3.
+Error: Process completed with exit code 1.
+```
 
 # Bonus Task:
 In order to showcase your approach to solving a less defined problem take a look at
