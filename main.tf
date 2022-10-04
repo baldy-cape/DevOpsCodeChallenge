@@ -5,6 +5,13 @@ terraform {
       version = "~> 4.0"
     }
   }
+    cloud {
+    organization = "BaldwinCloudWorks"
+
+    workspaces {
+      name = "DevOpsCodeChallenge"
+    }
+  }
 }
 
 locals {
