@@ -5,7 +5,7 @@ terraform {
       version = "~> 4.0"
     }
   }
-    cloud {
+  cloud {
     organization = "BaldwinCloudWorks"
 
     workspaces {
@@ -124,7 +124,7 @@ resource "aws_instance" "private" {
   iam_instance_profile   = aws_iam_instance_profile.this.name
   tags = {
     project = local.project_name
-    Name = "private"
+    Name    = "private"
   }
 }
 
@@ -139,7 +139,7 @@ resource "aws_instance" "public" {
   subnet_id              = aws_subnet.public.id
   tags = {
     project = local.project_name
-    Name = "public"
+    Name    = "public"
   }
 }
 
