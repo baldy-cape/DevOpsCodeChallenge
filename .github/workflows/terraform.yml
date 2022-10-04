@@ -74,3 +74,6 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false
+
+      - name: Test Public Website
+        run: curl  http://$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --output text --filters Name=tag:Name,Values=public)
