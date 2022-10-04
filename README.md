@@ -328,9 +328,13 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 ```
 
 # Task 2: Build a CI/CD pipeline to run your automation
+```
 Using a CI/CD tool provider of your choice, create a pipeline which will run the
 automation configured in Task 1.
-Requirements of this pipeline are as follows:
+
+```
+
+## Requirements of this pipeline are as follows:
 1. It should run only if commits have been pushed to the master branch
 2. Multiple runs should not result in duplicated resources
 3. Any automation commands that fail should cause the build to fail
