@@ -444,7 +444,7 @@ infrastructure which will fulfill this and provide the IaC in the same repositor
 tasks above.
 ```
 
-My approach would be to utilise a Kubernetes as a service product such as GKE autopilot. 
+My approach would be to utilise a "Kubernetes as a service" product such as GKE autopilot. 
 
 This reduces the amount of infrastructure that needs to be maintained. 
 
@@ -458,16 +458,12 @@ gcloud container clusters create-auto DevOpsCodeChallenge-cluster
 [~/storage/git/DevOpsCodeChallenge/bonus] $ kubectl apply -f nginx.yaml 
 ...
 [~/storage/git/DevOpsCodeChallenge/bonus] $ kubectl get pods | grep nginx
-W1004 11:30:51.279915 3352685 gcp.go:119] WARNING: the gcp auth plugin is deprecated in v1.22+, unavailable in v1.26+; use gcloud instead.
-To learn more, consult https://cloud.google.com/blog/products/containers-kubernetes/kubectl-auth-changes-in-gke
 nginx-deployment-74d589986c-7dcz2   1/1     Running             0          83s
 nginx-deployment-74d589986c-8f7rz   0/1     ContainerCreating   0          83s
 ```
 ## Test Access
 ```
 [~/storage/git/DevOpsCodeChallenge/bonus] $ kubectl get service | grep nginx
-W1004 11:42:08.763057 3353686 gcp.go:119] WARNING: the gcp auth plugin is deprecated in v1.22+, unavailable in v1.26+; use gcloud instead.
-To learn more, consult https://cloud.google.com/blog/products/containers-kubernetes/kubectl-auth-changes-in-gke
 nginx        LoadBalancer   10.48.2.170   34.88.40.31   80:31742/TCP   5m48s
 (laurence@carbon) Tue Oct 04 11:42:09
 [~/storage/git/DevOpsCodeChallenge/bonus] $ curl 34.88.40.31
@@ -499,12 +495,8 @@ Commercial support is available at
 Double the number of containers running nginx
 ```
 [~/storage/git/DevOpsCodeChallenge/bonus] $ kubectl scale --replicas=4 deployment nginx-deployment 
-W1004 11:45:10.137775 3354006 gcp.go:119] WARNING: the gcp auth plugin is deprecated in v1.22+, unavailable in v1.26+; use gcloud instead.
-To learn more, consult https://cloud.google.com/blog/products/containers-kubernetes/kubectl-auth-changes-in-gke
 deployment.apps/nginx-deployment scaled
-(laurence@carbon) Tue Oct 04 11:45:10
 [~/storage/git/DevOpsCodeChallenge/bonus] $ kubectl get pods | grep nginx
-W1004 11:45:20.535406 3354030 gcp.go:119] WARNING: the gcp auth plugin is deprecated in v1.22+, unavailable in v1.26+; use gcloud instead.
 To learn more, consult https://cloud.google.com/blog/products/containers-kubernetes/kubectl-auth-changes-in-gke
 nginx-deployment-74d589986c-7dcz2   1/1     Running             0          15m
 nginx-deployment-74d589986c-8f7rz   1/1     Running             0          15m
